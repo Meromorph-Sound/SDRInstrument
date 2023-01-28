@@ -6,9 +6,9 @@
 #
 # GNU Radio Python Flow Graph
 # Title: SDR audio search
-# GNU Radio version: 3.10.5.0
+# GNU Radio version: 3.8.2.0
 
-from packaging.version import Version as StrictVersion
+from distutils.version import StrictVersion
 
 if __name__ == '__main__':
     import ctypes
@@ -30,24 +30,22 @@ from gnuradio import audio
 from gnuradio import blocks
 from gnuradio import filter
 from gnuradio import gr
-from gnuradio.fft import window
 import sys
 import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-from gnuradio import soapy
 from gnuradio.qtgui import Range, RangeWidget
-from PyQt5 import QtCore
-
-
+import soapy
+import distutils
+from distutils import util
 
 from gnuradio import qtgui
 
 class rtl(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "SDR audio search", catch_exceptions=True)
+        gr.top_block.__init__(self, "SDR audio search")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("SDR audio search")
         qtgui.util.check_set_qss()
@@ -99,7 +97,7 @@ class rtl(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
-        _mute_check_box = Qt.QCheckBox("Mute")
+        _mute_check_box = Qt.QCheckBox('Mute')
         self._mute_choices = {True: 1, False: 0}
         self._mute_choices_inv = dict((v,k) for k,v in self._mute_choices.items())
         self._mute_callback = lambda i: Qt.QMetaObject.invokeMethod(_mute_check_box, "setChecked", Qt.Q_ARG("bool", self._mute_choices_inv[i]))
@@ -111,19 +109,19 @@ class rtl(gr.top_block, Qt.QWidget):
         for c in range(4, 5):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._filter_gain_range = Range(0.8, 8, 0.1, 1.0, 200)
-        self._filter_gain_win = RangeWidget(self._filter_gain_range, self.set_filter_gain, "Input Gain", "dial", float, QtCore.Qt.Horizontal)
+        self._filter_gain_win = RangeWidget(self._filter_gain_range, self.set_filter_gain, 'Input Gain', "dial", float)
         self.top_grid_layout.addWidget(self._filter_gain_win, 0, 3, 1, 1)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(3, 4):
             self.top_grid_layout.setColumnStretch(c, 1)
         # Create the options list
-        self._demod_mode_options = [0, 1, 2]
+        self._demod_mode_options = (0, 1, 2, )
         # Create the labels list
-        self._demod_mode_labels = ['AM', 'FM', 'Raw']
+        self._demod_mode_labels = ('AM', 'FM', 'Raw', )
         # Create the combo box
         self._demod_mode_tool_bar = Qt.QToolBar(self)
-        self._demod_mode_tool_bar.addWidget(Qt.QLabel("Demodulation mode" + ": "))
+        self._demod_mode_tool_bar.addWidget(Qt.QLabel('Demodulation mode' + ": "))
         self._demod_mode_combo_box = Qt.QComboBox()
         self._demod_mode_tool_bar.addWidget(self._demod_mode_combo_box)
         for _label in self._demod_mode_labels: self._demod_mode_combo_box.addItem(_label)
@@ -138,21 +136,21 @@ class rtl(gr.top_block, Qt.QWidget):
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._bw_factor_range = Range(0, 1, .01, 1, 200)
-        self._bw_factor_win = RangeWidget(self._bw_factor_range, self.set_bw_factor, "BW adjust", "dial", float, QtCore.Qt.Horizontal)
+        self._bw_factor_win = RangeWidget(self._bw_factor_range, self.set_bw_factor, 'BW adjust', "dial", float)
         self.top_grid_layout.addWidget(self._bw_factor_win, 0, 4, 1, 1)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(4, 5):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._audio_gain_range = Range(0, 10, .01, 1, 200)
-        self._audio_gain_win = RangeWidget(self._audio_gain_range, self.set_audio_gain, "Audio Gain", "dial", float, QtCore.Qt.Horizontal)
+        self._audio_gain_win = RangeWidget(self._audio_gain_range, self.set_audio_gain, 'Audio Gain', "dial", float)
         self.top_grid_layout.addWidget(self._audio_gain_win, 1, 3, 1, 1)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(3, 4):
             self.top_grid_layout.setColumnStretch(c, 1)
-        _squelch_on_check_box = Qt.QCheckBox("Squelch On")
-        self._squelch_on_choices = {True: 0, False: (-500)}
+        _squelch_on_check_box = Qt.QCheckBox('Squelch On')
+        self._squelch_on_choices = {True: 0, False: -500}
         self._squelch_on_choices_inv = dict((v,k) for k,v in self._squelch_on_choices.items())
         self._squelch_on_callback = lambda i: Qt.QMetaObject.invokeMethod(_squelch_on_check_box, "setChecked", Qt.Q_ARG("bool", self._squelch_on_choices_inv[i]))
         self._squelch_on_callback(self.squelch_on)
@@ -163,33 +161,68 @@ class rtl(gr.top_block, Qt.QWidget):
         for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._squelch_range = Range(-100, 0, 1, -50, 200)
-        self._squelch_win = RangeWidget(self._squelch_range, self.set_squelch, "Squelch", "counter", float, QtCore.Qt.Horizontal)
+        self._squelch_win = RangeWidget(self._squelch_range, self.set_squelch, 'Squelch', "counter", float)
         self.top_grid_layout.addWidget(self._squelch_win, 1, 1, 1, 1)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.soapy_rtlsdr_source_0 = None
+        self.soapy_source_0 = None
+        # Make sure that the gain mode is valid
+        if('Overall' not in ['Overall', 'Specific', 'Settings Field']):
+            raise ValueError("Wrong gain mode on channel 0. Allowed gain modes: "
+                  "['Overall', 'Specific', 'Settings Field']")
+
         dev = 'driver=rtlsdr'
-        stream_args = ''
+
+        # Stream arguments for every activated stream
         tune_args = ['']
         settings = ['']
 
-        self.soapy_rtlsdr_source_0 = soapy.source(dev, "fc32", 1, '',
-                                  stream_args, tune_args, settings)
-        self.soapy_rtlsdr_source_0.set_sample_rate(0, samp_rate)
-        self.soapy_rtlsdr_source_0.set_gain_mode(0, False)
-        self.soapy_rtlsdr_source_0.set_frequency(0, freq)
-        self.soapy_rtlsdr_source_0.set_frequency_correction(0, 0)
-        self.soapy_rtlsdr_source_0.set_gain(0, 'TUNER', 20)
+        # Setup the device arguments
+        dev_args = ''
+
+        self.soapy_source_0 = soapy.source(1, dev, dev_args, '',
+                                  tune_args, settings, samp_rate, "fc32")
+
+
+
+        self.soapy_source_0.set_dc_removal(0,bool(distutils.util.strtobool('False')))
+
+        # Set up DC offset. If set to (0, 0) internally the source block
+        # will handle the case if no DC offset correction is supported
+        self.soapy_source_0.set_dc_offset(0,0)
+
+        # Setup IQ Balance. If set to (0, 0) internally the source block
+        # will handle the case if no IQ balance correction is supported
+        self.soapy_source_0.set_iq_balance(0,0)
+
+        self.soapy_source_0.set_agc(0,False)
+
+        # generic frequency setting should be specified first
+        self.soapy_source_0.set_frequency(0, freq)
+
+        self.soapy_source_0.set_frequency(0,"BB",0)
+
+        # Setup Frequency correction. If set to 0 internally the source block
+        # will handle the case if no frequency correction is supported
+        self.soapy_source_0.set_frequency_correction(0,0)
+
+        self.soapy_source_0.set_antenna(0,'RX')
+
+        self.soapy_source_0.set_bandwidth(0,0)
+
+        if('Overall' != 'Settings Field'):
+            # pass is needed, in case the template does not evaluare anything
+            pass
+            self.soapy_source_0.set_gain(0,10)
         self.qtgui_waterfall_sink_x_1 = qtgui.waterfall_sink_c(
             1024, #size
-            window.WIN_BLACKMAN_hARRIS, #wintype
+            firdes.WIN_HAMMING, #wintype
             0, #fc
             audio_rate, #bw
             "Downsampled", #name
-            1, #number of inputs
-            None # parent
+            1 #number of inputs
         )
         self.qtgui_waterfall_sink_x_1.set_update_time(0.10)
         self.qtgui_waterfall_sink_x_1.enable_grid(False)
@@ -214,8 +247,7 @@ class rtl(gr.top_block, Qt.QWidget):
 
         self.qtgui_waterfall_sink_x_1.set_intensity_range(-140, 10)
 
-        self._qtgui_waterfall_sink_x_1_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_1.qwidget(), Qt.QWidget)
-
+        self._qtgui_waterfall_sink_x_1_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_1.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_1_win, 3, 0, 1, 2)
         for r in range(3, 4):
             self.top_grid_layout.setRowStretch(r, 1)
@@ -223,12 +255,11 @@ class rtl(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
             2048, #size
-            window.WIN_BLACKMAN_hARRIS, #wintype
+            firdes.WIN_HAMMING, #wintype
             0, #fc
             samp_rate, #bw
             "IF", #name
-            1, #number of inputs
-            None # parent
+            1 #number of inputs
         )
         self.qtgui_waterfall_sink_x_0.set_update_time(0.10)
         self.qtgui_waterfall_sink_x_0.enable_grid(False)
@@ -253,27 +284,77 @@ class rtl(gr.top_block, Qt.QWidget):
 
         self.qtgui_waterfall_sink_x_0.set_intensity_range(-140, 10)
 
-        self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.qwidget(), Qt.QWidget)
-
-        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win, 2, 0, 1, 5)
+        self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
+        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win, 2, 0, 1, 6)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 5):
+        for c in range(0, 6):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
+            audio_rate//2, #size
+            audio_rate, #samp_rate
+            'Signal', #name
+            1 #number of inputs
+        )
+        self.qtgui_time_sink_x_0.set_update_time(0.05)
+        self.qtgui_time_sink_x_0.set_y_axis(-1, 1)
+
+        self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_0.enable_tags(True)
+        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_0.enable_autoscale(True)
+        self.qtgui_time_sink_x_0.enable_grid(True)
+        self.qtgui_time_sink_x_0.enable_axis_labels(True)
+        self.qtgui_time_sink_x_0.enable_control_panel(False)
+        self.qtgui_time_sink_x_0.enable_stem_plot(False)
+
+        self.qtgui_time_sink_x_0.disable_legend()
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_time_sink_x_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_time_sink_x_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
+        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_win, 3, 4, 1, 2)
+        for r in range(3, 4):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(4, 6):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_sink_x_3 = qtgui.sink_f(
             1024, #fftsize
-            window.WIN_BLACKMAN_hARRIS, #wintype
+            firdes.WIN_HAMMING, #wintype
             freq, #fc
             audio_bw, #bw
             "Demodulated", #name
             True, #plotfreq
-            True, #plotwaterfall
+            False, #plotwaterfall
             False, #plottime
-            False, #plotconst
-            None # parent
+            False #plotconst
         )
         self.qtgui_sink_x_3.set_update_time(1.0/10)
-        self._qtgui_sink_x_3_win = sip.wrapinstance(self.qtgui_sink_x_3.qwidget(), Qt.QWidget)
+        self._qtgui_sink_x_3_win = sip.wrapinstance(self.qtgui_sink_x_3.pyqwidget(), Qt.QWidget)
 
         self.qtgui_sink_x_3.enable_rf_freq(False)
 
@@ -287,9 +368,9 @@ class rtl(gr.top_block, Qt.QWidget):
             firdes.low_pass(
                 filter_gain,
                 samp_rate,
-                (bw_factor*(audio_bw-1e3)),
+                bw_factor*(audio_bw-1e3),
                 1e3,
-                window.WIN_HAMMING,
+                firdes.WIN_HAMMING,
                 6.76))
         self.high_pass_filter_0 = filter.fir_filter_fff(
             1,
@@ -298,33 +379,28 @@ class rtl(gr.top_block, Qt.QWidget):
                 audio_rate,
                 25,
                 25,
-                window.WIN_HAMMING,
+                firdes.WIN_HAMMING,
                 6.76))
         self._fine_grained_centre_freq_range = Range(-1e6, 1e6, 1e3, 0, 200)
-        self._fine_grained_centre_freq_win = RangeWidget(self._fine_grained_centre_freq_range, self.set_fine_grained_centre_freq, "Fine grained centre freq", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._fine_grained_centre_freq_win = RangeWidget(self._fine_grained_centre_freq_range, self.set_fine_grained_centre_freq, 'Fine grained centre freq', "counter_slider", float)
         self.top_grid_layout.addWidget(self._fine_grained_centre_freq_win, 0, 2, 1, 1)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._centre_freq_range = Range(20e6, 1.7e9, 1.0e6, 500e6, 200)
-        self._centre_freq_win = RangeWidget(self._centre_freq_range, self.set_centre_freq, "Centre Frequency", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._centre_freq_win = RangeWidget(self._centre_freq_range, self.set_centre_freq, 'Centre Frequency', "counter_slider", float)
         self.top_grid_layout.addWidget(self._centre_freq_win, 0, 0, 1, 2)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.blocks_wavfile_sink_0 = blocks.wavfile_sink(
-            './signals.wav',
-            1,
-            audio_rate,
-            blocks.FORMAT_WAV,
-            blocks.FORMAT_PCM_16,
-            False
-            )
+        self.blocks_wavfile_sink_0 = blocks.wavfile_sink('./signals.wav', 1, audio_rate, 8)
         self.blocks_selector_1 = blocks.selector(gr.sizeof_float*1,demod_mode,0)
         self.blocks_selector_1.set_enabled(True)
         self.blocks_multiply_const_xx_0 = blocks.multiply_const_ff(audio_gain * (1-mute), 1)
+        self.blocks_copy_0 = blocks.copy(gr.sizeof_float*1)
+        self.blocks_copy_0.set_enabled(True)
         self.blocks_complex_to_real_0 = blocks.complex_to_real(1)
         self.blocks_complex_to_mag_0 = blocks.complex_to_mag(1)
         self.audio_sink_0 = audio.sink(audio_rate, 'hw:CARD=AudioPCI,DEV=0', False)
@@ -333,11 +409,12 @@ class rtl(gr.top_block, Qt.QWidget):
         	channel_rate=audio_rate,
         	audio_decim=1,
         	deviation=1000,
-        	audio_pass=(0.8*audio_bw),
-        	audio_stop=(0.95*audio_bw),
+        	audio_pass=0.8*audio_bw,
+        	audio_stop=0.95*audio_bw,
         	gain=1.0,
-        	tau=(75e-6),
+        	tau=75e-6,
         )
+
 
 
         ##################################################
@@ -348,24 +425,23 @@ class rtl(gr.top_block, Qt.QWidget):
         self.connect((self.analog_simple_squelch_cc_0, 0), (self.blocks_complex_to_mag_0, 0))
         self.connect((self.blocks_complex_to_mag_0, 0), (self.high_pass_filter_0, 0))
         self.connect((self.blocks_complex_to_real_0, 0), (self.blocks_selector_1, 2))
+        self.connect((self.blocks_copy_0, 0), (self.qtgui_sink_x_3, 0))
+        self.connect((self.blocks_copy_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_multiply_const_xx_0, 0), (self.audio_sink_0, 0))
+        self.connect((self.blocks_selector_1, 0), (self.blocks_copy_0, 0))
         self.connect((self.blocks_selector_1, 0), (self.blocks_multiply_const_xx_0, 0))
         self.connect((self.blocks_selector_1, 0), (self.blocks_wavfile_sink_0, 0))
-        self.connect((self.blocks_selector_1, 0), (self.qtgui_sink_x_3, 0))
         self.connect((self.high_pass_filter_0, 0), (self.blocks_selector_1, 0))
         self.connect((self.low_pass_filter_1, 0), (self.analog_simple_squelch_cc_0, 0))
         self.connect((self.low_pass_filter_1, 0), (self.blocks_complex_to_real_0, 0))
         self.connect((self.low_pass_filter_1, 0), (self.qtgui_waterfall_sink_x_1, 0))
-        self.connect((self.soapy_rtlsdr_source_0, 0), (self.low_pass_filter_1, 0))
-        self.connect((self.soapy_rtlsdr_source_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
+        self.connect((self.soapy_source_0, 0), (self.low_pass_filter_1, 0))
+        self.connect((self.soapy_source_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
 
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "rtl")
         self.settings.setValue("geometry", self.saveGeometry())
-        self.stop()
-        self.wait()
-
         event.accept()
 
     def get_squelch_on(self):
@@ -389,9 +465,8 @@ class rtl(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.set_decimation(int(self.samp_rate/self.audio_rate))
-        self.low_pass_filter_1.set_taps(firdes.low_pass(self.filter_gain, self.samp_rate, (self.bw_factor*(self.audio_bw-1e3)), 1e3, window.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(self.filter_gain, self.samp_rate, self.bw_factor*(self.audio_bw-1e3), 1e3, firdes.WIN_HAMMING, 6.76))
         self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
-        self.soapy_rtlsdr_source_0.set_sample_rate(0, self.samp_rate)
 
     def get_fine_grained_centre_freq(self):
         return self.fine_grained_centre_freq
@@ -414,7 +489,8 @@ class rtl(gr.top_block, Qt.QWidget):
         self.audio_rate = audio_rate
         self.set_audio_bw(self.audio_rate/2)
         self.set_decimation(int(self.samp_rate/self.audio_rate))
-        self.high_pass_filter_0.set_taps(firdes.high_pass(1, self.audio_rate, 25, 25, window.WIN_HAMMING, 6.76))
+        self.high_pass_filter_0.set_taps(firdes.high_pass(1, self.audio_rate, 25, 25, firdes.WIN_HAMMING, 6.76))
+        self.qtgui_time_sink_x_0.set_samp_rate(self.audio_rate)
         self.qtgui_waterfall_sink_x_1.set_frequency_range(0, self.audio_rate)
 
     def get_squelch_value(self):
@@ -438,14 +514,14 @@ class rtl(gr.top_block, Qt.QWidget):
     def set_freq(self, freq):
         self.freq = freq
         self.qtgui_sink_x_3.set_frequency_range(self.freq, self.audio_bw)
-        self.soapy_rtlsdr_source_0.set_frequency(0, self.freq)
+        self.soapy_source_0.set_frequency(0, self.freq)
 
     def get_filter_gain(self):
         return self.filter_gain
 
     def set_filter_gain(self, filter_gain):
         self.filter_gain = filter_gain
-        self.low_pass_filter_1.set_taps(firdes.low_pass(self.filter_gain, self.samp_rate, (self.bw_factor*(self.audio_bw-1e3)), 1e3, window.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(self.filter_gain, self.samp_rate, self.bw_factor*(self.audio_bw-1e3), 1e3, firdes.WIN_HAMMING, 6.76))
 
     def get_demod_mode(self):
         return self.demod_mode
@@ -466,7 +542,7 @@ class rtl(gr.top_block, Qt.QWidget):
 
     def set_bw_factor(self, bw_factor):
         self.bw_factor = bw_factor
-        self.low_pass_filter_1.set_taps(firdes.low_pass(self.filter_gain, self.samp_rate, (self.bw_factor*(self.audio_bw-1e3)), 1e3, window.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(self.filter_gain, self.samp_rate, self.bw_factor*(self.audio_bw-1e3), 1e3, firdes.WIN_HAMMING, 6.76))
 
     def get_audio_gain(self):
         return self.audio_gain
@@ -480,8 +556,9 @@ class rtl(gr.top_block, Qt.QWidget):
 
     def set_audio_bw(self, audio_bw):
         self.audio_bw = audio_bw
-        self.low_pass_filter_1.set_taps(firdes.low_pass(self.filter_gain, self.samp_rate, (self.bw_factor*(self.audio_bw-1e3)), 1e3, window.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(self.filter_gain, self.samp_rate, self.bw_factor*(self.audio_bw-1e3), 1e3, firdes.WIN_HAMMING, 6.76))
         self.qtgui_sink_x_3.set_frequency_range(self.freq, self.audio_bw)
+
 
 
 
@@ -500,9 +577,6 @@ def main(top_block_cls=rtl, options=None):
     tb.show()
 
     def sig_handler(sig=None, frame=None):
-        tb.stop()
-        tb.wait()
-
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -512,6 +586,11 @@ def main(top_block_cls=rtl, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
+    def quitting():
+        tb.stop()
+        tb.wait()
+
+    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
 
 if __name__ == '__main__':
