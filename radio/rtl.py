@@ -102,17 +102,17 @@ class rtl(gr.top_block, Qt.QWidget):
         self._mute_callback = lambda i: Qt.QMetaObject.invokeMethod(_mute_check_box, "setChecked", Qt.Q_ARG("bool", self._mute_choices_inv[i]))
         self._mute_callback(self.mute)
         _mute_check_box.stateChanged.connect(lambda i: self.set_mute(self._mute_choices[bool(i)]))
-        self.top_grid_layout.addWidget(_mute_check_box, 1, 4, 1, 1)
-        for r in range(1, 2):
+        self.top_grid_layout.addWidget(_mute_check_box, 4, 4, 1, 1)
+        for r in range(4, 5):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(4, 5):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._filter_gain_range = Range(0.8, 8, 0.1, 1.0, 200)
         self._filter_gain_win = RangeWidget(self._filter_gain_range, self.set_filter_gain, 'Input Gain', "dial", float)
-        self.top_grid_layout.addWidget(self._filter_gain_win, 0, 3, 1, 1)
+        self.top_grid_layout.addWidget(self._filter_gain_win, 0, 2, 1, 1)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(3, 4):
+        for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         # Create the options list
         self._demod_mode_options = (0, 1, 2, )
@@ -129,24 +129,24 @@ class rtl(gr.top_block, Qt.QWidget):
         self._demod_mode_combo_box.currentIndexChanged.connect(
             lambda i: self.set_demod_mode(self._demod_mode_options[i]))
         # Create the radio buttons
-        self.top_grid_layout.addWidget(self._demod_mode_tool_bar, 1, 0, 1, 1)
+        self.top_grid_layout.addWidget(self._demod_mode_tool_bar, 1, 4, 1, 1)
         for r in range(1, 2):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.top_grid_layout.setColumnStretch(c, 1)
-        self._bw_factor_range = Range(0, 1, .01, 1, 200)
-        self._bw_factor_win = RangeWidget(self._bw_factor_range, self.set_bw_factor, 'BW adjust', "dial", float)
-        self.top_grid_layout.addWidget(self._bw_factor_win, 0, 4, 1, 1)
-        for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(4, 5):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._audio_gain_range = Range(0, 10, .01, 1, 200)
-        self._audio_gain_win = RangeWidget(self._audio_gain_range, self.set_audio_gain, 'Audio Gain', "dial", float)
-        self.top_grid_layout.addWidget(self._audio_gain_win, 1, 3, 1, 1)
-        for r in range(1, 2):
+        self._bw_factor_range = Range(0, 1, .01, 1, 200)
+        self._bw_factor_win = RangeWidget(self._bw_factor_range, self.set_bw_factor, 'BW adjust', "dial", float)
+        self.top_grid_layout.addWidget(self._bw_factor_win, 0, 3, 1, 1)
+        for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(3, 4):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        self._audio_gain_range = Range(0, 10, .01, 1, 200)
+        self._audio_gain_win = RangeWidget(self._audio_gain_range, self.set_audio_gain, 'Audio Gain', "dial", float)
+        self.top_grid_layout.addWidget(self._audio_gain_win, 0, 4, 1, 1)
+        for r in range(0, 1):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(4, 5):
             self.top_grid_layout.setColumnStretch(c, 1)
         _squelch_on_check_box = Qt.QCheckBox('Squelch On')
         self._squelch_on_choices = {True: 0, False: -500}
@@ -154,17 +154,17 @@ class rtl(gr.top_block, Qt.QWidget):
         self._squelch_on_callback = lambda i: Qt.QMetaObject.invokeMethod(_squelch_on_check_box, "setChecked", Qt.Q_ARG("bool", self._squelch_on_choices_inv[i]))
         self._squelch_on_callback(self.squelch_on)
         _squelch_on_check_box.stateChanged.connect(lambda i: self.set_squelch_on(self._squelch_on_choices[bool(i)]))
-        self.top_grid_layout.addWidget(_squelch_on_check_box, 1, 2, 1, 1)
+        self.top_grid_layout.addWidget(_squelch_on_check_box, 1, 3, 1, 1)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(2, 3):
+        for c in range(3, 4):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._squelch_range = Range(-100, 0, 1, -50, 200)
         self._squelch_win = RangeWidget(self._squelch_range, self.set_squelch, 'Squelch', "counter", float)
-        self.top_grid_layout.addWidget(self._squelch_win, 1, 1, 1, 1)
+        self.top_grid_layout.addWidget(self._squelch_win, 1, 2, 1, 1)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(1, 2):
+        for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.rtlsdr_source_0 = osmosdr.source(
             args="numchan=" + str(1) + " " + ""
@@ -213,8 +213,8 @@ class rtl(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_1.set_intensity_range(-140, 10)
 
         self._qtgui_waterfall_sink_x_1_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_1.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_1_win, 3, 0, 1, 2)
-        for r in range(3, 4):
+        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_1_win, 4, 0, 2, 2)
+        for r in range(4, 6):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
@@ -250,8 +250,8 @@ class rtl(gr.top_block, Qt.QWidget):
         self.qtgui_waterfall_sink_x_0.set_intensity_range(-140, 10)
 
         self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win, 2, 0, 1, 5)
-        for r in range(2, 3):
+        self.top_grid_layout.addWidget(self._qtgui_waterfall_sink_x_0_win, 3, 0, 1, 5)
+        for r in range(3, 4):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 5):
             self.top_grid_layout.setColumnStretch(c, 1)
@@ -263,7 +263,7 @@ class rtl(gr.top_block, Qt.QWidget):
             "Demodulated", #name
             True, #plotfreq
             True, #plotwaterfall
-            False, #plottime
+            True, #plottime
             False #plotconst
         )
         self.qtgui_sink_x_3.set_update_time(1.0/10)
@@ -271,8 +271,8 @@ class rtl(gr.top_block, Qt.QWidget):
 
         self.qtgui_sink_x_3.enable_rf_freq(False)
 
-        self.top_grid_layout.addWidget(self._qtgui_sink_x_3_win, 3, 2, 1, 2)
-        for r in range(3, 4):
+        self.top_grid_layout.addWidget(self._qtgui_sink_x_3_win, 4, 2, 2, 2)
+        for r in range(4, 6):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(2, 4):
             self.top_grid_layout.setColumnStretch(c, 1)
@@ -296,10 +296,10 @@ class rtl(gr.top_block, Qt.QWidget):
                 6.76))
         self._fine_grained_centre_freq_range = Range(-1e6, 1e6, 1e3, 0, 200)
         self._fine_grained_centre_freq_win = RangeWidget(self._fine_grained_centre_freq_range, self.set_fine_grained_centre_freq, 'Fine grained centre freq', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._fine_grained_centre_freq_win, 0, 2, 1, 1)
-        for r in range(0, 1):
+        self.top_grid_layout.addWidget(self._fine_grained_centre_freq_win, 1, 0, 1, 2)
+        for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(2, 3):
+        for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._centre_freq_range = Range(20e6, 1.7e9, 1.0e6, 500e6, 200)
         self._centre_freq_win = RangeWidget(self._centre_freq_range, self.set_centre_freq, 'Centre Frequency', "counter_slider", float)

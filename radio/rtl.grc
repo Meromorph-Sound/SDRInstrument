@@ -48,7 +48,7 @@ blocks:
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: 1,3,1,1
+    gui_hint: 0,4,1,1
     label: Audio Gain
     min_len: '200'
     orient: Qt.Horizontal
@@ -62,7 +62,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2008, 212.0]
+    coordinate: [2184, 36.0]
     rotation: 0
     state: true
 - name: audio_rate
@@ -81,7 +81,7 @@ blocks:
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: 0,4,1,1
+    gui_hint: 0,3,1,1
     label: BW adjust
     min_len: '200'
     orient: Qt.Horizontal
@@ -95,7 +95,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2128, 36.0]
+    coordinate: [2032, 36.0]
     rotation: 0
     state: true
 - name: centre_freq
@@ -116,7 +116,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1568, 36.0]
+    coordinate: [1480, 36.0]
     rotation: 0
     state: true
 - name: decimation
@@ -135,7 +135,7 @@ blocks:
   id: variable_qtgui_chooser
   parameters:
     comment: ''
-    gui_hint: 1,0,1,1
+    gui_hint: 1,4,1,1
     label: Demodulation mode
     label0: AM
     label1: FM
@@ -158,14 +158,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1568, 212.0]
+    coordinate: [2144, 196.0]
     rotation: 0
     state: true
 - name: filter_gain
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: 0,3,1,1
+    gui_hint: 0,2,1,1
     label: Input Gain
     min_len: '200'
     orient: Qt.Horizontal
@@ -179,14 +179,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2008, 36.0]
+    coordinate: [1896, 36.0]
     rotation: 0
     state: true
 - name: fine_grained_centre_freq
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: 0,2,1,1
+    gui_hint: 1,0,1,2
     label: Fine grained centre freq
     min_len: '200'
     orient: Qt.Horizontal
@@ -200,7 +200,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1840, 36.0]
+    coordinate: [1680, 36.0]
     rotation: 0
     state: true
 - name: freq
@@ -220,7 +220,7 @@ blocks:
   parameters:
     comment: ''
     'false': '0'
-    gui_hint: 1,4,1,1
+    gui_hint: 4,4,1,1
     label: Mute
     'true': '1'
     type: int
@@ -229,7 +229,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2128, 212.0]
+    coordinate: [2160, 444.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -248,7 +248,7 @@ blocks:
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: 1,1,1,1
+    gui_hint: 1,2,1,1
     label: Squelch
     min_len: '200'
     orient: Qt.Horizontal
@@ -262,7 +262,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1728, 212.0]
+    coordinate: [1880, 212.0]
     rotation: 0
     state: true
 - name: squelch_on
@@ -270,7 +270,7 @@ blocks:
   parameters:
     comment: ''
     'false': '-500'
-    gui_hint: 1,2,1,1
+    gui_hint: 1,3,1,1
     label: Squelch On
     'true': '0'
     type: int
@@ -279,7 +279,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1840, 212.0]
+    coordinate: [2008, 212.0]
     rotation: 0
     state: true
 - name: squelch_value
@@ -497,13 +497,13 @@ blocks:
     comment: ''
     fc: freq
     fftsize: '1024'
-    gui_hint: 3,2,1,2
+    gui_hint: 4,2,2,2
     maxoutbuf: '0'
     minoutbuf: '0'
     name: '"Demodulated"'
     plotconst: 'False'
     plotfreq: 'True'
-    plottime: 'False'
+    plottime: 'True'
     plotwaterfall: 'True'
     rate: '10'
     showports: 'False'
@@ -549,7 +549,7 @@ blocks:
     fftsize: '2048'
     freqhalf: 'True'
     grid: 'False'
-    gui_hint: 2,0,1,5
+    gui_hint: 3,0,1,5
     int_max: '10'
     int_min: '-140'
     label1: ''
@@ -610,7 +610,7 @@ blocks:
     fftsize: '1024'
     freqhalf: 'True'
     grid: 'False'
-    gui_hint: 3,0,1,2
+    gui_hint: 4,0,2,2
     int_max: '10'
     int_min: '-140'
     label1: ''
